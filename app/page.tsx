@@ -57,7 +57,7 @@ export default function Home() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-900">
-              Contest<span className="text-blue-600">Tracker</span>.
+              Contest<span className="text-blue-600">Tracker</span>
             </h1>
             <p className="text-gray-500 mt-2 font-medium text-sm">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
