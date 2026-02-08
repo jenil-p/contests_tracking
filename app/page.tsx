@@ -1,31 +1,28 @@
+// src/app/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
-import { format } from 'date-fns';
-import { ExternalLink, Loader2, Calendar, Clock } from 'lucide-react';
-
-interface Contest {
-  platform: string;
-  name: string;
-  startTime: string;
-  duration: string;
-  url: string;
-}
+import { Loader2, Trophy, Filter } from 'lucide-react';
+import { Contest } from '@/src/lib/utils';
+import ContestCard from '@/src/components/ContestCard';
+import LiveWidget from '@/src/components/LiveWidget';
 
 export default function Home() {
-  const [contests, setContests] = useState<Contest[]>([]);
+  const [upcomingContests, setUpcomingContests] = useState<Contest[]>([]);
+  const [liveContests, setLiveContests] = useState<Contest[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     async function fetchContests() {
       try {
-        // Fetch from our internal Next.js API route
         const res = await fetch('/api/contests');
         const data = await res.json();
 
         if (data.status === 'success') {
-          setContests(data.data);
+          setLiveContests(data.data.filter((c: Contest) => c.status === 'CODING'));
+          setUpcomingContests(data.data.filter((c: Contest) => c.status === 'BEFORE'));
         } else {
           setError('Failed to load contests');
         }
@@ -35,94 +32,88 @@ export default function Home() {
         setLoading(false);
       }
     }
-
     fetchContests();
   }, []);
 
-  // Platform badge colors
-  const getPlatformStyle = (platform: string) => {
-    switch (platform.toLowerCase()) {
-      case 'codeforces': return 'bg-blue-900 text-blue-200 border-blue-700';
-      case 'leetcode': return 'bg-yellow-900 text-yellow-200 border-yellow-700';
-      case 'codechef': return 'bg-orange-900 text-orange-200 border-orange-700';
-      default: return 'bg-gray-800 text-gray-200';
-    }
-  };
+  const filteredUpcoming = filter === 'all'
+    ? upcomingContests
+    : upcomingContests.filter(c => c.platform.toLowerCase() === filter);
 
   return (
-    <main className="min-h-screen bg-[#0a0a0a] text-gray-100 p-6 md:p-12">
-      <div className="max-w-4xl mx-auto">
+    <main className="min-h-screen bg-[#F8F9FA] text-gray-900 font-sans pb-20">
 
-        {/* Header */}
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text mb-2">
-            Contest Tracker
-          </h1>
-          <p className="text-gray-400">Never miss a Codeforces, LeetCode, or CodeChef round again.</p>
+      {/* Background Gradients (Subtle Premium Feel) */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-0 w-full h-96 bg-linear-to-b from-gray-100 to-transparent opacity-50"></div>
+        <div className="absolute top-[-10%] right-[-5%] w-96 h-96 bg-blue-100/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-[10%] left-[-5%] w-72 h-72 bg-purple-100/30 rounded-full blur-3xl"></div>
+      </div>
+
+      <LiveWidget liveContests={liveContests} />
+
+      <div className="relative z-10 max-w-2xl mx-auto px-5 pt-16 md:pt-24">
+
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+          <div>
+            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-900">
+              Contest<span className="text-blue-600">Tracker</span>
+            </h1>
+            <p className="text-gray-500 mt-2 font-medium text-sm">
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+
+          {/* Glassy Filters */}
+          <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-1.5 bg-white/70 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-white/50 ring-1 ring-gray-900/5">
+            {['all', 'codeforces', 'leetcode', 'codechef'].map((p) => (
+              <button
+                key={p}
+                onClick={() => setFilter(p)}
+                className={`w-full flex items-center justify-center py-2.5 rounded-xl text-xs font-bold capitalize transition-all duration-200 ${filter === p
+                    ? 'bg-gray-900 text-white shadow-md transform scale-[1.02]'
+                    : 'text-gray-500 hover:bg-white hover:text-gray-900 hover:shadow-sm'
+                  }`}
+              >
+                {p === 'codeforces' ? 'Codeforces' : p === 'leetcode' ? 'LeetCode' : p === 'codechef' ? 'CodeChef' : 'All'}
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Loading State */}
+        {/* States: Loading / Error / Empty */}
         {loading && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
-            <p className="text-gray-500">Fetching upcoming contests...</p>
+          <div className="flex flex-col items-center justify-center py-32 space-y-4">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-300" />
+            <p className="text-gray-400 font-medium text-xs tracking-widest uppercase">Syncing Calendars...</p>
           </div>
         )}
 
-        {/* Error State */}
         {error && (
-          <div className="p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-200 text-center">
+          <div className="p-6 bg-red-50 border border-red-100 rounded-2xl text-center text-red-600 text-sm font-medium">
             {error}
           </div>
         )}
 
-        {/* Contest List */}
-        {!loading && !error && (
-          <div className="grid gap-4">
-            {contests.length === 0 ? (
-              <p className="text-center text-gray-500">No upcoming contests found.</p>
-            ) : (
-              contests.map((contest, index) => (
-                <a
-                  key={index}
-                  href={contest.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group block bg-[#161616] hover:bg-[#1f1f1f] border border-gray-800 hover:border-gray-700 rounded-xl p-5 transition-all duration-200 relative overflow-hidden"
-                >
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-
-                    {/* Left Side: Info */}
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <span className={`text-xs font-bold px-2 py-1 rounded border ${getPlatformStyle(contest.platform)}`}>
-                          {contest.platform}
-                        </span>
-                        <h2 className="text-lg font-semibold group-hover:text-blue-400 transition-colors">
-                          {contest.name}
-                        </h2>
-                      </div>
-
-                      <div className="flex items-center gap-6 text-sm text-gray-400 mt-2">
-                        <div className="flex items-center gap-1.5">
-                          <Calendar className="w-4 h-4" />
-                          <span>{format(new Date(contest.startTime), "EEE, MMM d • h:mm a")}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <Clock className="w-4 h-4" />
-                          <span>{contest.duration}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Side: Icon */}
-                    <ExternalLink className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
-                  </div>
-                </a>
-              ))
-            )}
+        {!loading && !error && filteredUpcoming.length === 0 && (
+          <div className="text-center py-24 bg-white/50 rounded-3xl border border-gray-100 border-dashed backdrop-blur-sm">
+            <Trophy className="w-12 h-12 text-gray-200 mx-auto mb-4" />
+            <p className="text-gray-400 font-medium">No upcoming contests found.</p>
           </div>
         )}
+
+        {/* Contest List */}
+        <div className="space-y-4">
+          {filteredUpcoming.map((contest, index) => (
+            <ContestCard key={index} contest={contest} />
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="mt-16 mb-8 text-center flex justify-center items-center flex-col gap-2">
+          <div className='w-32 rounded-full h-1 bg-gray-300'></div>
+          <p className="text-[10px] text-gray-300 font-medium uppercase tracking-widest">Designed for Consistency</p>
+        </div>
       </div>
     </main>
   );
