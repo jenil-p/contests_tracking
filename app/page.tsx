@@ -1,65 +1,129 @@
-import Image from "next/image";
+'use client';
+
+import { useEffect, useState } from 'react';
+import { format } from 'date-fns';
+import { ExternalLink, Loader2, Calendar, Clock } from 'lucide-react';
+
+interface Contest {
+  platform: string;
+  name: string;
+  startTime: string;
+  duration: string;
+  url: string;
+}
 
 export default function Home() {
+  const [contests, setContests] = useState<Contest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    async function fetchContests() {
+      try {
+        // Fetch from our internal Next.js API route
+        const res = await fetch('/api/contests');
+        const data = await res.json();
+
+        if (data.status === 'success') {
+          setContests(data.data);
+        } else {
+          setError('Failed to load contests');
+        }
+      } catch (err) {
+        setError('Something went wrong');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchContests();
+  }, []);
+
+  // Platform badge colors
+  const getPlatformStyle = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'codeforces': return 'bg-blue-900 text-blue-200 border-blue-700';
+      case 'leetcode': return 'bg-yellow-900 text-yellow-200 border-yellow-700';
+      case 'codechef': return 'bg-orange-900 text-orange-200 border-orange-700';
+      default: return 'bg-gray-800 text-gray-200';
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <main className="min-h-screen bg-[#0a0a0a] text-gray-100 p-6 md:p-12">
+      <div className="max-w-4xl mx-auto">
+
+        {/* Header */}
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-blue-400 to-purple-500 text-transparent bg-clip-text mb-2">
+            Contest Tracker
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+          <p className="text-gray-400">Never miss a Codeforces, LeetCode, or CodeChef round again.</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-10 h-10 animate-spin text-blue-500 mb-4" />
+            <p className="text-gray-500">Fetching upcoming contests...</p>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && (
+          <div className="p-4 bg-red-900/20 border border-red-800 rounded-lg text-red-200 text-center">
+            {error}
+          </div>
+        )}
+
+        {/* Contest List */}
+        {!loading && !error && (
+          <div className="grid gap-4">
+            {contests.length === 0 ? (
+              <p className="text-center text-gray-500">No upcoming contests found.</p>
+            ) : (
+              contests.map((contest, index) => (
+                <a
+                  key={index}
+                  href={contest.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group block bg-[#161616] hover:bg-[#1f1f1f] border border-gray-800 hover:border-gray-700 rounded-xl p-5 transition-all duration-200 relative overflow-hidden"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+                    {/* Left Side: Info */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <span className={`text-xs font-bold px-2 py-1 rounded border ${getPlatformStyle(contest.platform)}`}>
+                          {contest.platform}
+                        </span>
+                        <h2 className="text-lg font-semibold group-hover:text-blue-400 transition-colors">
+                          {contest.name}
+                        </h2>
+                      </div>
+
+                      <div className="flex items-center gap-6 text-sm text-gray-400 mt-2">
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="w-4 h-4" />
+                          <span>{format(new Date(contest.startTime), "EEE, MMM d • h:mm a")}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <Clock className="w-4 h-4" />
+                          <span>{contest.duration}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Side: Icon */}
+                    <ExternalLink className="w-5 h-5 text-gray-600 group-hover:text-white transition-colors" />
+                  </div>
+                </a>
+              ))
+            )}
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
