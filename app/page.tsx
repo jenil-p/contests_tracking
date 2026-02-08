@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, Trophy, Filter } from 'lucide-react';
-import { Contest } from '@/src/lib/utils';
-import ContestCard from '@/src/components/ContestCard';
-import LiveWidget from '@/src/components/LiveWidget';
+import { Contest } from './lib/utils';
+import ContestCard from './components/ContestCard';
+import LiveWidget from './components/LiveWidget';
 
 export default function Home() {
   const [upcomingContests, setUpcomingContests] = useState<Contest[]>([]);
@@ -57,7 +57,7 @@ export default function Home() {
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
           <div>
             <h1 className="text-3xl md:text-4xl font-black tracking-tight text-gray-900">
-              Contest<span className="text-blue-600">Tracker</span>
+              Contest<span className="text-blue-600">Tracker</span>.
             </h1>
             <p className="text-gray-500 mt-2 font-medium text-sm">
               {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
@@ -111,7 +111,7 @@ export default function Home() {
 
         {/* Footer */}
         <div className="mt-16 mb-8 text-center flex justify-center items-center flex-col gap-2">
-          <div className='w-32 rounded-full h-1 bg-gray-300'></div>
+          <div className='w-32 rounded-full h-1 bg-gray-00'></div>
           <p className="text-[10px] text-gray-300 font-medium uppercase tracking-widest">Designed for Consistency</p>
         </div>
       </div>

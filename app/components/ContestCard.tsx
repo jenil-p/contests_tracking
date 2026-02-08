@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { format, differenceInSeconds } from 'date-fns';
 import { CalendarPlus, Clock, ExternalLink } from 'lucide-react';
-import { Contest, getBrandColors, getPlatformIcon, getCalendarLink } from '@/src/lib/utils';
+import { Contest, getBrandColors, getPlatformIcon, getCalendarLink } from '../lib/utils';
 
 // --- Smart Countdown Sub-Component ---
 const SmartCountdown = ({ targetDate }: { targetDate: string }) => {
