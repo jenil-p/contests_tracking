@@ -111,7 +111,7 @@ export default function Home() {
 
         {/* Footer */}
         <div className="mt-16 mb-8 text-center flex justify-center items-center flex-col gap-2">
-          <div className='w-32 rounded-full h-1 bg-gray-00'></div>
+          <div className='w-32 rounded-full h-1 bg-gray-200'></div>
           <p className="text-[10px] text-gray-300 font-medium uppercase tracking-widest">Designed for Consistency</p>
         </div>
       </div>
