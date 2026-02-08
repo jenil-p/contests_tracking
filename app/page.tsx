@@ -3,9 +3,9 @@
 
 import { useEffect, useState } from 'react';
 import { Loader2, Trophy, Filter } from 'lucide-react';
-import { Contest } from './lib/utils';
-import ContestCard from './components/ContestCard';
-import LiveWidget from './components/LiveWidget';
+import { Contest } from './_lib/utils';
+import ContestCard from './_components/ContestCard';
+import LiveWidget from './_components/LiveWidget';
 
 export default function Home() {
   const [upcomingContests, setUpcomingContests] = useState<Contest[]>([]);

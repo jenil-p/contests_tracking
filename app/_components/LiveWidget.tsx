@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { ExternalLink, X, ChevronRight, Zap } from 'lucide-react';
 import { format } from 'date-fns';
-import { Contest, getPlatformIcon } from '../lib/utils';
+import { Contest, getPlatformIcon } from '../_lib/utils';
 
 const LiveProgressBar = ({ startTime, endTime }: { startTime: string; endTime: string }) => {
   const [progress, setProgress] = useState(0);
